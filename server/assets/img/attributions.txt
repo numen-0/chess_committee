@@ -1,0 +1,27 @@
+white:
+  pawn:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499810
+  king:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499806
+  queen:  By CburnettPawan (talk • contribs • blocks • protections • deletions • moves • rights • rights changes) - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499812
+  rook:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499814
+  bishop: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499801
+  knight: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499808
+black:
+  pawn:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499809
+  king:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499803
+  queen:  By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499811
+  rook:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499813
+  bishop: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499800
+  knight: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499807
+
+favicon.ico:
+    This favicon was generated using the following graphics from Twitter Twemoji:
+
+    - Graphics Title: 1f573.svg
+    - Graphics Author: Copyright 2020 Twitter, Inc and other contributors (https://github.com/twitter/twemoji)
+    - Graphics Source: https://github.com/twitter/twemoji/blob/master/assets/svg/1f573.svg
+    - Graphics License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
+buttons:
+<a href="https://www.flaticon.com/free-icons/edit-tool" title="edit tool icons">Edit tool icons created by Creatype - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/repeat" title="repeat icons">Repeat icons created by IconKanan - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/dark-mode" title="dark mode icons">Dark mode icons created by Icon Hubs - Flaticon</a>

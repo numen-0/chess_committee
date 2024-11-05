@@ -1,0 +1,20 @@
+┏┳┓┏━┓┳━┓┏━┓
+ ┃ ┃ ┃┃ ┃┃ ┃
+ ┻ ┗━┛┻━┛┗━┛
+server:
+[_] show mesage:
+    [_] board hash
+    [_] percentage (updated)
+    [_] end game (win, loose, tie)
+[_] be able to play as black
+[_] only make the moves and hash seleccionable
+[_] clean code
+referee:
+[_] do the thing
+[_] simple and direct error mesages
+commettee:
+[_] do the thing
+extra:
+[_] player vs player
+[_] ai vs ai
+[_] give hash and generate board, and play from it

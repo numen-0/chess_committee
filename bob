@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -eu
+
+C="\e[92m"
+R="\e[0m"
+
+# change if needed #
+term=st
+
+
+# skip typing for sudo
+if [ -f PASSWORD ]; then
+    run_cmd="cd $(pwd) && pwd && cat PASSWORD | sudo -S docker-compose up --build" 
+else
+    run_cmd="cd $(pwd) && pwd && sudo docker-compose up --build"
+fi
+
+pkill -f "$run_cmd" \
+    && printf "${C}%s${R}\n" "closing previous term" \
+    || true # set -e
+
+printf "${C}%s${R}\n" "cooking..."
+
+case $term in
+    "gnome-terminal")
+        gnome-terminal -- bash -c "$run_cmd"
+        ;;
+    "konsole")
+        konsole --noclose -e bash -c "$run_cmd"
+        ;;
+    "xterm")
+        xterm -hold -e bash -c "$run_cmd"
+        ;;
+    "st")
+        st -e bash -c "$run_cmd" &
+        ;;
+    *)
+        echo "unkwonw term"
+        ;;
+esac

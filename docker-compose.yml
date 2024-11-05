@@ -1,0 +1,38 @@
+services:
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    depends_on:
+      - referee  # The server only communicates with the referee
+    networks:
+      - chessnet
+
+  db:
+    build: ./db
+    environment:
+      POSTGRES_USER: chess_user
+      POSTGRES_PASSWORD: chess_pass
+      POSTGRES_DB: chess_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  referee:
+    build: ./referee
+    ports:
+      - "5001:5001"
+    networks:
+      - chessnet
+
+  ai:
+    build: ./ai
+    depends_on:
+      - db  # The AI committee also depends on the db
+
+networks:
+  chessnet:
+    driver: bridge
+volumes:
+  db_data:

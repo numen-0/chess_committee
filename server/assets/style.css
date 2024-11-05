@@ -1,0 +1,197 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0d9b5;
+}
+.container {
+    width: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* text **********************************************************************/
+.text {
+    font-family: "JetBrains Mono", monospace;
+    color: #303030;
+}
+
+#percentage {
+    font-size: 6em;
+    text-align: center;
+}
+#board-hash {
+    margin-top: 15px;
+    font-size: 1.2em;
+    text-align: center;
+}
+#turn-display {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    /* opacity: 0.8; */
+    color: #b58863;
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+    z-index: 1000;
+}
+
+#error-msg {
+    color: #fe4a49;
+    font-size: 2.4em;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    text-align: center;
+}
+
+#moves-tittle {
+    font-size: 2.4em;
+}
+#game-moves {
+    width:  350px;
+    height: 350px;
+    vertical-align: top;
+    font-size: 1.2em;
+    text-align: left;
+}
+
+
+/* buttons *******************************************************************/
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+button {
+    position: relative;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+button img {
+    width:  50px;
+    height: 50px;
+    transition: transform 1s ease;
+}
+#restartButton img:hover {
+    transform: rotate(360deg) scale(1.1);
+    transition: transform 0.3s ease;
+}
+.rotated {
+    transform: rotate(180deg);
+    transition: transform 1s ease;
+}
+.flipped {
+    transform: scaleX(-1);
+    transition: transform 1s ease;
+}
+
+/* chess-board ***************************************************************/
+.chess-board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 600px;
+    height: 600px;
+    outline: 4px solid #b58863;
+}
+
+.chess-board div {
+    width: 75px;
+    height: 75px;
+}
+
+.chess-board div.white {
+    background-color: #f0d9b5;
+}
+
+.chess-board div.black {
+    background-color: #b58863;
+}
+
+.piece {
+    width: 75px;
+    height: 75px;
+    cursor: grab;
+    position: absolute;
+    background-color: transparent;
+    transition: opacity 0.1s ease;
+}
+.piece.dragging {
+    opacity: 0.25;
+    z-index:  1000;
+    pointer-events: none;
+}
+
+.piece.selected {
+    outline: 2px solid #030303;
+}
+.piece.moving {
+    transition: transform 0.3s ease;
+}
+
+/* chess-board ***************************************************************/
+.promotion-modal {
+    display: none;
+    opacity: 0.8;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ffffff;
+    border: 2px solid #333333;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.close-button-circle {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    width: 24px;  /* Set width and height for the circular button */
+    height: 24px;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;  /* Makes the element round */
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+.close-button-circle:hover {
+    align-items: center;
+    background-color: #cccccc;
+    transition: background-color 0.3s;
+}
+.close-button {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.promotion-content {
+    text-align: center;
+}
+
+.promotion-option {
+    margin: 5px;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.promotion-option:hover {
+    background-color: #cccccc;
+    transition: background-color 0.3s;
+}

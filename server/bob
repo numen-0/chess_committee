@@ -1,0 +1,34 @@
+#!/bin/sh
+
+set -eu
+
+C="\e[92m"
+R="\e[0m"
+
+image_name="flask-chess-server"
+container_name="chess-server"
+server_port=5000
+
+[ -f ../PASSWORD ] && cat ../PASSWORD | sudo -S -v
+
+# Check if the image exists; build only if missing
+if ! sudo docker images | grep -q "$image_name"; then
+    printf "${C}%s${R}\n" "Building Docker image: $image_name"
+    sudo docker build -t "$image_name" .
+else
+    printf "${C}%s${R}\n" "Docker image $image_name already exists. Skipping build."
+fi
+
+# Handle any existing container
+printf "${C}%s${R}\n" "Dealing with existing container: $container_name"
+if sudo docker ps -a | grep -q "$container_name"; then
+    printf "${C}%s${R}\n" "Stopping and removing existing container: $container_name"
+    sudo docker stop "$container_name" && sudo docker rm "$container_name"
+fi
+
+# Run the container with the existing or newly built image
+printf "${C}%s${R}\n" "Running container: $container_name"
+sudo docker run -d --name "$container_name" -p "$server_port:$server_port" "$image_name"
+
+printf "${C}%s${R}\n" "Flask server is up and running! http://localhost:$server_port/"
+
