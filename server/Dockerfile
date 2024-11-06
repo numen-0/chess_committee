@@ -10,7 +10,6 @@ RUN pip install -r requirements.txt
 
 # Copy the app files
 COPY app.py .
-COPY templates/ ./templates/
 COPY assets/ ./assets/
 
 # Expose port 5000

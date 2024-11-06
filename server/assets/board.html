@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chess</title>
+    <link rel="icon" href="/assets/img/favicon.ico" type="image/x-icon">
+    <!-- style -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+    <!-- scripts -->
+    <script src="/assets/script.js"></script>
+</head>
+
+<body>
+    <!-- left -->
+    <div class="container">
+        <h1 class="text" id="percentage">
+            100.0%
+        </h1>
+    </div>
+    <!-- mid -->
+    <div class="container">
+        <!-- buttons -->
+        <div class="controls">
+            <button id="flipButton">
+                <img src="/assets/img/flip.png" alt="Flip Board" />
+            </button>
+            <button id="restartButton">
+                <img src="/assets/img/restart.png" alt="Restart Game" />
+            </button>
+            <button id="switchButton" class="rotated">
+                <img src="/assets/img/switch.png" alt="Switch Team" />
+            </button>
+
+        </div>
+        <!-- board -->
+        <div class="chess-board"></div>
+        <!-- board encoding -->
+        <p class="text" id="board-encoding">
+            0x????_????_????_????_????_????_????_????_????_????_????_????
+        <p/>
+    </div>
+    <!-- right -->
+    <div class="container">
+        <h2 class="text" id="moves-tittle">moves</h2>
+        <div class="text" id="game-moves">
+            <!-- game moves -->
+        </div>
+        <h2 class="text" id="error-msg">.</h2>
+    </div>
+
+    <!-- turn -->
+    <h2 id="turn-display" class="text"></h2>
+    <!-- promotion -->
+    <div id="promotionModal" class="pop-box">
+        <div class="pop-content">
+            <div id="closeModal" class="close-button-circle">
+                <button class="close-button text">&times;</button>
+            </div>
+            <p class="text">Choose a promotion piece:</p>
+            <button class="promotion-option text" data-piece="queen">Queen</button>
+            <button class="promotion-option text" data-piece="rook">Rook</button>
+            <button class="promotion-option text" data-piece="bishop">Bishop</button>
+            <button class="promotion-option text" data-piece="knight">Knight</button>
+        </div>
+    </div>
+    <!-- result -->
+    <div id="result-display" class="pop-box">
+        <div class="pop-content">
+            <p id="result" class="text">You Won</p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,17 +1,23 @@
 let gameState = {
     isWhiteTeam: true,
     yourTurn: true,
+    // pieces: null,   // {e2: w_rook, a2: w_bishop,}
+    fen: null,
+    moves: null,
 };
 
 let pageMetaData = {
     flipped: false,
     selectedPiece: null,
-    gameId: null,
+    // squares: null,  // {a1: square1, a2: square2,}
     promotionModal: null,
     promotionOptions: null,
     promoted_id: 0,
     turnDisplay: null,
-}
+    resultDisplay: null,
+    resultText: null,
+    encodingDisplay: null,
+};
 
 const promotionMap = {
     n: "knight",
@@ -20,27 +26,80 @@ const promotionMap = {
     q: "queen"
 };
 
-// referee ////////////////////////////////////////////////////////////////////
-async function createGame() {
-    // TODO: change localhost
-    const response = await fetch('http://localhost:5001/create_game', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-    const data = await response.json();
-    pageMetaData.gameId = data.game_id; // Store the game ID
-    document.getElementById('game-moves').innerText = data.board_moves; // Display initial board state
+// bridge /////////////////////////////////////////////////////////////////////
+function setMoves(moves) {
+    gameState.moves = moves;
+    document.getElementById('game-moves').innerText = moves; // Display initial board state
 }
 
-async function checkMove(from, to) {
-    const response = await fetch(`http://localhost:5001/check_move/${pageMetaData.gameId}`, {
+// ai /////////////////////////////////////////////////////////////////////////
+async function encodeBoard() {
+    const response = await fetch('http://localhost:5002/encode_board', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+            fen: gameState.fen,
+        })
+    });
+    const data = await response.json();
+    console.log(data);
+    pageMetaData.encodingDisplay.innerHTML = data.encoding;
+}
+
+// referee ////////////////////////////////////////////////////////////////////
+async function createGame() {
+    // preguntar a iker sobre localhost vs referee
+    const response = await fetch('http://localhost:5001/create_game', {
+        method: 'GET',
+    });
+    const data = await response.json();
+    gameState.fen = data.fen;
+    setMoves(data.board_moves);
+    encodeBoard()
+}
+async function gameOver() {
+    const response = await fetch('http://localhost:5001/game_over', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            fen: gameState.fen,
+        })
+    });
+    const data = await response.json();
+    console.log(data);
+
+    if (!data.is_over) return false;
+
+    const result = data.result;
+    const winner = data.winner;
+    const reason = data.reason;
+    let msg = "";
+
+    if (result === "1/2-1/2") {
+        msg = `it's a draw (${reason})`;
+    } else if (result === "1-0") {
+        msg = "white wins by " + reason;
+    } else if (result === "0-1") {
+        msg = "black wins by " + reason;
+    }
+    pageMetaData.resultText.innerHTML = msg;
+    pageMetaData.resultDisplay.style.display = 'block';
+
+    return true;
+}
+
+async function checkMove(from, to) {
+    const response = await fetch(`http://localhost:5001/check_move`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            fen: gameState.fen,
             from: from,
             to: to
         })
@@ -50,14 +109,20 @@ async function checkMove(from, to) {
 
 async function makeRandomMove() {
     try {
-        const response = await fetch(`http://localhost:5001/random_move/${pageMetaData.gameId}`, {
-            method: 'GET',
+        const response = await fetch(`http://localhost:5001/random_move`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                fen: gameState.fen,
+            })
         });
 
         const result = await response.json();
-        console.log(result)
+        console.log(result);
         
-        const move = result.move; // e.g., "e2e4" "b2b1q"
+        const move = result.move_uci; // e.g., "e2e4" "b2b1q"
         const fromSquare = move.slice(0, 2);
         const toSquare = move.slice(2, 4);
         let promotionPiece = null;
@@ -68,11 +133,10 @@ async function makeRandomMove() {
         }
 
         // Find the piece in the board that needs to be moved
-        // const piece = document.getElementById(`${fromSquare}`);
         const piece = document.querySelector(`div[data-position="${fromSquare}"]`).querySelector('.piece');
         const targetSquare = document.querySelector(`div[data-position="${toSquare}"]`);
 
-        makeMove(piece, targetSquare, promotionPiece);
+        await makeMove(piece, targetSquare, promotionPiece);
     } catch (error) {
         console.error("Error fetching random move:", error);
     }
@@ -80,7 +144,11 @@ async function makeRandomMove() {
 
 // buttons ////////////////////////////////////////////////////////////////////
 function initGame() {
+    pageMetaData.resultDisplay.style.display = 'none';
     gameState.yourTurn = gameState.isWhiteTeam;
+    gameState.moves = "";
+    if (pageMetaData.selectedPiece) 
+        pageMetaData.selectedPiece.classList.remove('selected');
     pageMetaData.selectedPiece = null;
     pageMetaData.promoted_id = 0;
 
@@ -92,18 +160,10 @@ function initGame() {
     pageMetaData.turnDisplay.innerHTML = gameState.yourTurn
                                             ? 'your turn' 
                                             : 'the commettee is thinking';
-
     setupBoard()
     if (!gameState.yourTurn) makeRandomMove();
 }
 async function restartGame() {
-    // Notify referee
-    if (pageMetaData.gameId) {
-        await fetch(`http://localhost:5001/remove_game/${pageMetaData.gameId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
     await createGame();
     initGame();
 }
@@ -143,22 +203,25 @@ function flipBoard() {
 }
 
 // board //////////////////////////////////////////////////////////////////////
-function setupBoard() { // TODO: FUTURE: make this init from game state...
+function setupBoard(initialPositions = null) { // use the fen value
     const board = document.querySelector('.chess-board');
     board.innerHTML = ''; // Clear the board
-    const initialPositions = {
-        // Black pieces
-        'a8': 'black_rook', 'b8': 'black_knight', 'c8': 'black_bishop', 'd8': 'black_queen',
-        'e8': 'black_king', 'f8': 'black_bishop', 'g8': 'black_knight', 'h8': 'black_rook',
-        'a7': 'black_pawn', 'b7': 'black_pawn', 'c7': 'black_pawn', 'd7': 'black_pawn',
-        'e7': 'black_pawn', 'f7': 'black_pawn', 'g7': 'black_pawn', 'h7': 'black_pawn',
-        // White pieces
-        'a1': 'white_rook', 'b1': 'white_knight', 'c1': 'white_bishop', 'd1': 'white_queen',
-        'e1': 'white_king', 'f1': 'white_bishop', 'g1': 'white_knight', 'h1': 'white_rook',
-        'a2': 'white_pawn', 'b2': 'white_pawn', 'c2': 'white_pawn', 'd2': 'white_pawn',
-        'e2': 'white_pawn', 'f2': 'white_pawn', 'g2': 'white_pawn', 'h2': 'white_pawn',
-    };
+    if (!initialPositions) {
+        initialPositions = {
+            // Black pieces
+            'a8': 'black_rook', 'b8': 'black_knight', 'c8': 'black_bishop', 'd8': 'black_queen',
+            'e8': 'black_king', 'f8': 'black_bishop', 'g8': 'black_knight', 'h8': 'black_rook',
+            'a7': 'black_pawn', 'b7': 'black_pawn', 'c7': 'black_pawn', 'd7': 'black_pawn',
+            'e7': 'black_pawn', 'f7': 'black_pawn', 'g7': 'black_pawn', 'h7': 'black_pawn',
+            // White pieces
+            'a1': 'white_rook', 'b1': 'white_knight', 'c1': 'white_bishop', 'd1': 'white_queen',
+            'e1': 'white_king', 'f1': 'white_bishop', 'g1': 'white_knight', 'h1': 'white_rook',
+            'a2': 'white_pawn', 'b2': 'white_pawn', 'c2': 'white_pawn', 'd2': 'white_pawn',
+            'e2': 'white_pawn', 'f2': 'white_pawn', 'g2': 'white_pawn', 'h2': 'white_pawn',
+        };
+    }
 
+    // TODO: SAVE HERE THE STUFF
     // Create the 8x8 grid and set up squares with alternating colors
     let row, col;
     for (let j = 0; j < 8; j++) {
@@ -226,13 +289,15 @@ function setupBoard() { // TODO: FUTURE: make this init from game state...
 
 // drag ///////////////////////////////////////////////////////////////////////
 function dragStart(e) {
-    const isPlayerPiece = checkPieceTeam(e.target);
+    const piece = e.target;
+    const isPlayerPiece = checkPieceTeam(piece);
     if (!isPlayerPiece) {
         e.preventDefault(); // Prevent drag if not player's piece
         return;
     }
+    pageMetaData.selectedPiece.classList.remove('selected');
+    pageMetaData.selectedPiece = null;
 
-    const piece = e.target;
     e.dataTransfer.setData('text/plain', piece.id);
 
     const dragImage = piece.cloneNode(true);
@@ -263,29 +328,22 @@ function dragOver(e) {
 }
 
 async function drop(e) {
-    e.preventDefault();
     const pieceId = e.dataTransfer.getData('text/plain');
     const piece = document.getElementById(pieceId);
     let targetSquare = e.target;
 
-    // If a piece is targeted, move to its parent square
     if (targetSquare.classList.contains('piece')) { 
         targetSquare = targetSquare.parentNode;
     }
 
-    if (targetSquare === piece.parentNode) {
-        return; // Prevent dropping the piece on itself
-    }
+    if (targetSquare === piece.parentNode) { return; }
 
-    if (piece) {
-        await makeMove(piece, targetSquare)
-    }
+    if (piece) { await makeMove(piece, targetSquare) }
 }
 // move piece /////////////////////////////////////////////////////////////////
 async function movePiece(piece, targetSquare) {
     piece.classList.add('moving');
 
-    // const existingPiece = targetSquare.querySelector('.piece');
     const targetRect = targetSquare.getBoundingClientRect();
     const pieceRect = piece.getBoundingClientRect();
     const deltaX = targetRect.left - pieceRect.left;
@@ -321,6 +379,7 @@ async function makeMove(piece, targetSquare, promotionPiece = null) {
         isPawn && (to[1] === (color ? "8" : "1"));
     // The writing of the castling indicates the square of departure of the king
     // and that of arrival of the king, not for the rook.
+
     const castling = piece.id.includes("king") &&
         (from === (color ? "e1" : "e8")) &&
         (to[0] === 'c' || to[0] === 'g')
@@ -367,24 +426,22 @@ async function makeMove(piece, targetSquare, promotionPiece = null) {
             return;
         }
 
-        // TODO: castling
-        document.getElementById('game-moves').innerHTML = result.board_moves;
+        setMoves((!gameState.moves ? "" : gameState.moves + " ") + result.move)
+        gameState.fen = result.fen;
+        encodeBoard();
+        
         if (castling) { // this is horrible (O_O)
             const rook = document.querySelector(
                 `[data-position="${(to[0] === 'c' ? 'a' : 'h')}${to[1]}"]`
-            );
+            ).querySelector('.piece');
             const rookTargetSquare = document.querySelector(
                 `[data-position="${(to[0] === 'c' ? 'd' : 'f')}${to[1]}"]`
             );
-            // I don't know why but the animation snaps when the king starts to
-            // move, even though I said await...
+            movePiece(piece, targetSquare);
             await movePiece(rook, rookTargetSquare)
         }
         await movePiece(piece, targetSquare);
-        //
-        //     movePiece(rook, rookTargetSquare);
-        // }
-        // await movePiece(piece, targetSquare);
+
         if (promoting) {
             console.log("promoting: " + piece.id + " to " + name);
             piece.id = name + "_promoted_" + pageMetaData.promoted_id;
@@ -399,6 +456,9 @@ async function makeMove(piece, targetSquare, promotionPiece = null) {
                 capturedSquare.innerHTML = ''; // Clear the square
             }
         }
+
+        if (await gameOver()) { return; }
+    
 
         if (gameState.yourTurn) {
             pageMetaData.turnDisplay.innerHTML = 'the commettee is thinking';
@@ -473,7 +533,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // promotion menu
     pageMetaData.promotionModal = document.getElementById('promotionModal');
     pageMetaData.promotionOptions = document.querySelectorAll('.promotion-option');
+    // result menu
+    pageMetaData.resultDisplay = document.getElementById('result-display');
+    pageMetaData.resultText = document.getElementById('result');
+    
+    // display
     pageMetaData.turnDisplay = document.getElementById('turn-display');
+    pageMetaData.encodingDisplay = document.getElementById('board-encoding');
 
     // init game
     createGame();

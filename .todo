@@ -1,20 +1,21 @@
 ┏┳┓┏━┓┳━┓┏━┓
  ┃ ┃ ┃┃ ┃┃ ┃
  ┻ ┗━┛┻━┛┗━┛
+git:
+[_] delete the .csv files from the track add them to .gitignore
+[_] mention the data were is from, and how to transform it
+[_] finish the readme
 server:
+[_] dragingn bug (when you drag in top of a piece it goes red)
 [_] show mesage:
-    [_] board hash
     [_] percentage (updated)
-    [_] end game (win, loose, tie)
-[_] be able to play as black
-[_] only make the moves and hash seleccionable
 [_] clean code
+    [_] save the squares and pieces in a map from the start
 referee:
-[_] do the thing
-[_] simple and direct error mesages
 commettee:
 [_] do the thing
 extra:
-[_] player vs player
-[_] ai vs ai
-[_] give hash and generate board, and play from it
+[_] serv: player vs player
+[_] serv: ai vs ai
+[_] serv: give hash and generate board, and play from it
+[_] ref: give more clear info about ilegal moves

@@ -14,12 +14,12 @@ black:
   knight: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499807
 
 favicon.ico:
-    This favicon was generated using the following graphics from Twitter Twemoji:
+This favicon was generated using the following graphics from Twitter Twemoji:
 
-    - Graphics Title: 1f573.svg
-    - Graphics Author: Copyright 2020 Twitter, Inc and other contributors (https://github.com/twitter/twemoji)
-    - Graphics Source: https://github.com/twitter/twemoji/blob/master/assets/svg/1f573.svg
-    - Graphics License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+- Graphics Title: 265f.svg
+- Graphics Author: Copyright 2020 Twitter, Inc and other contributors (https://github.com/twitter/twemoji)
+- Graphics Source: https://github.com/twitter/twemoji/blob/master/assets/svg/265f.svg
+- Graphics License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
 
 buttons:
 <a href="https://www.flaticon.com/free-icons/edit-tool" title="edit tool icons">Edit tool icons created by Creatype - Flaticon</a>

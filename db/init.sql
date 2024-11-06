@@ -16,7 +16,7 @@ CREATE DATABASE chess_db;
 -- Create the games table
 CREATE TABLE games (
     id SERIAL PRIMARY KEY,
-    result CHAR(1) CHECK (result IN ('w', 'b', 'd'))
+    result CHAR(1) CHECK (result IN ('w', 'b', 'd')),
     white_elo INT,
     black_elo INT,
     moves TEXT,

@@ -9,8 +9,8 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy the AI logic script
-COPY ai_logic.py .
+COPY app.py .
 
 # Run the AI logic service
-CMD ["python", "ai_logic.py"]
+CMD ["python", "app.py"]
 

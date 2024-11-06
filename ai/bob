@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -eu
+
+C="\e[92m"
+R="\e[0m"
+
+quiet=false
+image_name="flask-chess-ai"
+container_name="chess-ai"
+ai_port=5002  # Port for AI service
+
+# Optional: load password for sudo if stored in ../PASSWORD
+[ -f ../PASSWORD ] && cat ../PASSWORD | sudo -S -v
+
+# Check if the Docker image for the AI service exists; if not, build it
+if ! sudo docker images | grep -q "$image_name"; then
+    printf "${C}%s${R}\n" "Building image $image_name"
+    sudo docker build -t $image_name .
+else
+    printf "${C}%s${R}\n" "Image $image_name exists. Skipping build."
+fi
+
+# Check if the container is running; if so, stop and remove it
+printf "${C}%s${R}\n" "Managing existing $container_name container"
+if sudo docker ps -a | grep -q "$container_name"; then
+    sudo docker stop "$container_name" && sudo docker rm "$container_name"
+    printf "${C}%s${R}\n" "Stopped and removed existing $container_name container"
+fi
+
+# Run the container
+printf "${C}%s${R}\n" "Starting $container_name container"
+sudo docker run -d --name $container_name -p $ai_port:$ai_port $image_name
+
+# Wait for the AI service to become accessible
+printf "${C}%s${R}\n" "Checking AI service availability..."
+sleep 1
+while ! curl -s http://localhost:$ai_port/generate_move > /dev/null; do
+    printf "${C}%s${R}\n" "AI service is not ready yet, waiting..."
+    sleep 1
+done
+
+printf "${C}%s${R}\n" "AI service is up and running on port $ai_port!"
+

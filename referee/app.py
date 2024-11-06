@@ -4,76 +4,86 @@ import chess
 import random
 
 app = Flask(__name__)
-
-# Allow only your front-end origin
-CORS(app)
-# CORS(app, origins=["http://localhost:5000"])
-# CORS(app, resources={r"/*": {"origins": "http://localhost:5000"}})
-
-# In-memory storage for boards, keyed by game_id
-boards = {}
+CORS(app, origins=["http://localhost:5000"])
 
 
-@app.route('/remove_game/<game_id>', methods=['POST'])
-def remove_game(game_id):
-    boards.pop(game_id)
-
-
-@app.route('/create_game', methods=['POST'])
+@app.route('/create_game', methods=['GET'])
 def create_game():
-    # Simple game ID based on the number of existing games
-    game_id = str(len(boards) + 1)
-    boards[game_id] = (chess.Board(), [])
-    return jsonify({"game_id": game_id, "board_moves": ""})
+    board = chess.Board()
+    return jsonify({
+        "board_moves": "",
+        "fen": board.fen(en_passant="fen")
+    })
 
 
-@app.route('/check_move/<game_id>', methods=['POST'])
-def check_move(game_id):
-    if game_id not in boards:
-        return jsonify({"valid": False, "reason": "Game not found."})
-
-    board, san_moves = boards[game_id]
-    move_data = request.json  # Expects {"from": "e2", "to": "e4"}
-    from_square = move_data.get("from")
-    to_square = move_data.get("to")
-
+@app.route('/check_move', methods=['POST'])
+def check_move():
     try:
+        # Expects {from: "e2", to: "e4", fen: "..."}
+        req_data = request.json
+        from_square = req_data.get("from")
+        to_square = req_data.get("to")
+
+        board = chess.Board(fen=req_data.get("fen"))
         move = chess.Move.from_uci(f"{from_square}{to_square}")
         if move in board.legal_moves:
             san_move = board.san(move)  # Get the SAN notation of the move
             board.push(move)  # Make the move if valid
-            san_moves.append(san_move)  # Add the SAN move to the history
             is_valid = True
             reason = "Valid move"
+            fen = board.fen(en_passant="fen")
         else:
             is_valid = False
             reason = "Invalid move: This move is not allowed."
+            san_move = ""
+            fen = ""
     except Exception as e:
         is_valid = False
         reason = f"Error processing move: {str(e)}"
+        san_move = ""
+        fen = ""
 
     return jsonify({
         "valid": is_valid,
         "reason": reason,
-        "board_moves": " ".join(san_moves)
+        "move": san_move,
+        "fen": fen
     })
 
 
-@app.route('/random_move/<game_id>', methods=['GET'])
-def random_move(game_id):
-    if game_id not in boards:
-        return jsonify({"valid": False, "reason": "Game not found."})
+@app.route('/game_over', methods=['POST'])
+def game_over():
+    req_data = request.json
 
-    board, san_moves = boards[game_id]
+    board = chess.Board(fen=req_data.get("fen"))
 
-    if board.is_game_over():
-        return jsonify({"valid": False, "reason": "Game is over."})
+    isOver = board.is_game_over()
+    result = ""
+    reason = ""
+    if isOver:
+        out = board.outcome()
+        result = out.result()
+        reason = out.termination.name.lower()
+
+    return jsonify({
+        "is_over": isOver,
+        "result": result,
+        "reason": reason
+    })
+
+
+@app.route('/random_move', methods=['POST'])
+def random_move():
+    req_data = request.json
+
+    board = chess.Board(fen=req_data.get("fen"))
 
     move = random.choice(list(board.legal_moves))
+    board.push(move)  # Make the move if valid
 
     # NOTE: it's ugly but we send the move to get it back to check_move :)
     return jsonify({
-        "move": move.uci(),
+        "move_uci": move.uci(),
     })
 
 

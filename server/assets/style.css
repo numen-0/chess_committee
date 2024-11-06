@@ -1,3 +1,11 @@
+* { /* disable drag + select */
+    -webkit-user-select: none; /* Chrome, Safari */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE10+ */
+    user-select: none;         /* Standard */
+    -webkit-user-drag: none;
+    user-drag: none;
+}
 body {
     display: flex;
     justify-content: center;
@@ -23,17 +31,16 @@ body {
     font-size: 6em;
     text-align: center;
 }
-#board-hash {
+#board-encodings {
     margin-top: 15px;
     font-size: 1.2em;
     text-align: center;
 }
 #turn-display {
     position: absolute;
-    top: 10px;
+    top: 0px;
     right: 10px;
-    /* opacity: 0.8; */
-    color: #b58863;
+    color: #303030;
     padding: 10px;
     font-size: 16px;
     text-align: center;
@@ -58,7 +65,6 @@ body {
     font-size: 1.2em;
     text-align: left;
 }
-
 
 /* buttons *******************************************************************/
 .controls {
@@ -138,8 +144,8 @@ button img {
     transition: transform 0.3s ease;
 }
 
-/* chess-board ***************************************************************/
-.promotion-modal {
+/* boxes *********************************************************************/
+.pop-box {
     display: none;
     opacity: 0.8;
     position: fixed;
@@ -150,6 +156,9 @@ button img {
     border: 2px solid #333333;
     padding: 20px;
     z-index: 1000;
+}
+.pop-content {
+    text-align: center;
 }
 
 .close-button-circle {
@@ -181,10 +190,6 @@ button img {
     cursor: pointer;
 }
 
-.promotion-content {
-    text-align: center;
-}
-
 .promotion-option {
     margin: 5px;
     padding: 10px;
@@ -195,3 +200,16 @@ button img {
     background-color: #cccccc;
     transition: background-color 0.3s;
 }
+/* drag + select *************************************************************/
+.piece {
+    -webkit-user-drag: element;
+    user-drag: element;
+}
+
+#board-hash, #game-moves {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
