@@ -11,7 +11,7 @@ from enum import Enum
 
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5000"])
+CORS(app)
 # CORS(app, origins=["http://localhost:5000"], supports_credentials=True)
 
 

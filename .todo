@@ -4,7 +4,7 @@
 git:
 [_] finish the readme
 docker:
-[_] change the server image to appache
+[_] change the db image
 [_] kubernetes
 server:
 [X] do the thing
@@ -14,6 +14,10 @@ referee:
 [X] do the thing
 commettee:
 [X] do the thing
+db:
+[X] do the thing
+[_] make changes permanent
+[_] add new games
 extra:
 [_] serv: player vs player
 [_] serv: ai vs ai

@@ -282,7 +282,7 @@ function setupBoard(initialPositions = null) { // use the fen value
 
             if (initialPositions[position]) {
                 const piece = document.createElement('img');
-                piece.src = `/assets/img/${initialPositions[position]}.svg`;
+                piece.src = `/img/${initialPositions[position]}.svg`;
                 piece.id = initialPositions[position] + "_" + position;
                 piece.classList.add('piece');
                 piece.draggable = true;
@@ -500,7 +500,7 @@ async function makeMove(piece, targetSquare, promotionPiece = null) {
         if (promoting) {
             console.log("promoting: " + piece.id + " to " + name);
             piece.id = name + "_promoted_" + pageMetaData.promoted_id;
-            piece.src = `/assets/img/${name}.svg`; // Update piece image
+            piece.src = `/img/${name}.svg`; // Update piece image
         } else if (enPassant) {
             console.log("\ten passant capture");
 

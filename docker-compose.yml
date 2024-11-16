@@ -1,14 +1,16 @@
 services:
   server:
-    # Appache
-    build: ./server
+    image: httpd:latest
     ports:
-      - "5000:5000"
+      - "80:80"
     depends_on:
       - referee
       - ai
     networks:
       - chessnet
+    volumes:
+      - ./server/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./server/web:/usr/local/apache2/htdocs:ro
 
   referee:
     build: ./referee
@@ -24,10 +26,6 @@ services:
 
   ai:
     build: ./ai
-    # environment:
-    #   POSTGRES_USER:     /run/secrets/POSTGRES_USER
-    #   POSTGRES_PASSWORD: /run/secrets/POSTGRES_PASSWORD
-    #   POSTGRES_DB:       /run/secrets/POSTGRES_DB
     ports:
       - "5002:5002"
     depends_on:

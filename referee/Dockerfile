@@ -13,4 +13,3 @@ COPY app.py .
 
 # Run the game logic service
 CMD ["python", "app.py"]
-

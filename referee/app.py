@@ -4,7 +4,7 @@ import chess
 import random
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5000"])
+CORS(app)
 
 
 @app.route('/create_game', methods=['GET'])
