@@ -4,22 +4,18 @@
 git:
 [_] finish the readme
 docker:
-[_] change the db image
 [_] kubernetes
 server:
 [X] do the thing
-[_] clean code
-    [_] save the squares and pieces in a map from the start
+[_] save matches in the db (add new games)
 referee:
 [X] do the thing
 commettee:
 [X] do the thing
 db:
 [X] do the thing
-[_] make changes permanent
-[_] add new games
 extra:
-[_] serv: player vs player
-[_] serv: ai vs ai
-[_] serv: give hash and generate board, and play from it
-[_] ref: give more clear info about ilegal moves
+[_] server: player vs player
+[_] server: ai vs ai
+[_] server: give hash and generate board, and play from it
+[_] referee: give more clear info about ilegal moves

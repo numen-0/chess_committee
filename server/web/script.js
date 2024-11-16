@@ -64,7 +64,7 @@ async function encodeBoard() {
     pageMetaData.encodingDisplay.innerHTML = data.encoding;
 }
 async function makeAiMove() {
-    pageMetaData.turnDisplay.innerHTML = 'the committee is thinking';
+    pageMetaData.turnDisplay.innerHTML = 'the committee is thinking...';
     const response = await fetch('http://localhost:5002/generate_moves', {
         method: 'POST',
         headers: {
@@ -109,7 +109,10 @@ async function makeAiMove() {
 
 // referee ////////////////////////////////////////////////////////////////////
 async function createGame() {
-    // preguntar a iker sobre localhost vs referee
+    pageMetaData.percentage.innerHTML = "100.0%"
+    pageMetaData.turnDisplay.innerHTML = gameState.isWhiteTeam
+                                            ? 'your turn' 
+                                            : 'the committee is thinking...';
     const response = await fetch('http://localhost:5001/create_game', {
         method: 'GET',
     });
@@ -205,7 +208,7 @@ function initGame() {
     }
     pageMetaData.turnDisplay.innerHTML = gameState.yourTurn
                                             ? 'your turn' 
-                                            : 'the committee is thinking';
+                                            : 'the committee is thinking...';
     setupBoard()
     if (!gameState.yourTurn) makeAiMove();
 }

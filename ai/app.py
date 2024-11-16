@@ -12,21 +12,20 @@ from enum import Enum
 
 app = Flask(__name__)
 CORS(app)
-# CORS(app, origins=["http://localhost:5000"], supports_credentials=True)
 
 
-def read_secret(secret_name, default=None):
+def read_secret(secret_name):
     try:
         with open(f"/run/secrets/{secret_name}", "r") as file:
             return file.read().strip()
     except FileNotFoundError:
-        return default
+        raise FileNotFoundError(f"Secret file {secret_name} not found")
 
 
 DB_HOST = "db"
-DB_NAME = read_secret("DB_NAME", "chess_db")
-DB_USER = read_secret("DB_USER", "root")
-DB_PASSWORD = read_secret("DB_PASSWORD", "1234")
+DB_NAME = read_secret("POSTGRES_DB")
+DB_USER = read_secret("POSTGRES_USER")
+DB_PASSWORD = read_secret("POSTGRES_PASSWORD")
 db_connection = None
 db_size = 1
 
