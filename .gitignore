@@ -1,3 +1,6 @@
 PASSWORD
 pyrightconfig.json
-myvenv
+venv
+db/data.csv
+secrets
+cleanup

@@ -1,10 +1,11 @@
 services:
   server:
+    # Appache
     build: ./server
     ports:
       - "5000:5000"
     depends_on:
-      - referee  # The server only communicates with the referee
+      - referee
       - ai
     networks:
       - chessnet
@@ -23,10 +24,14 @@ services:
 
   ai:
     build: ./ai
+    # environment:
+    #   POSTGRES_USER:     /run/secrets/POSTGRES_USER
+    #   POSTGRES_PASSWORD: /run/secrets/POSTGRES_PASSWORD
+    #   POSTGRES_DB:       /run/secrets/POSTGRES_DB
     ports:
       - "5002:5002"
     depends_on:
-      - db  # The AI depends on the db being ready
+      - db
     networks:
       - chessnet
     healthcheck:
@@ -34,27 +39,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    secrets:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
 
   db:
     build: ./db
-    environment:
-      POSTGRES_USER: chess_user
-      POSTGRES_PASSWORD: chess_pass
-      POSTGRES_DB: chess_db
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
       - chessnet
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U chess_user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    secrets:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
 
 networks:
   chessnet:
     driver: bridge
 volumes:
   db_data:
+
+secrets:
+  POSTGRES_USER:
+    file: ./secrets/POSTGRES_USER
+  POSTGRES_PASSWORD:
+    file: ./secrets/POSTGRES_PASSWORD
+  POSTGRES_DB:
+    file: ./secrets/POSTGRES_DB

@@ -2,18 +2,18 @@
  ┃ ┃ ┃┃ ┃┃ ┃
  ┻ ┗━┛┻━┛┗━┛
 git:
-[_] delete the .csv files from the track add them to .gitignore
-[_] mention the data were is from, and how to transform it
 [_] finish the readme
+docker:
+[_] change the server image to appache
+[_] kubernetes
 server:
-[_] dragingn bug (when you drag in top of a piece it goes red)
-[_] show mesage:
-    [_] percentage (updated)
+[X] do the thing
 [_] clean code
     [_] save the squares and pieces in a map from the start
 referee:
+[X] do the thing
 commettee:
-[_] do the thing
+[X] do the thing
 extra:
 [_] serv: player vs player
 [_] serv: ai vs ai

@@ -1,0 +1,42 @@
+#!/bin/sh
+
+set -eu
+
+dataset="big"
+clearn_zip=true
+ZIP=./archive.zip
+OUT=./data.csv
+
+if [ "$dataset" = "small" ]; then
+    IN=./games.csv
+    echo "donwloading data"
+    curl -L -o $ZIP \
+        https://www.kaggle.com/api/v1/datasets/download/datasnaek/chess
+
+    echo "undziping"
+    time unzip -o $ZIP
+
+    echo "transforming data"
+    time cut -d , -f13 $IN > $OUT
+    rm $IN
+else
+    IN=./chess_games.csv
+    echo "donwloading data"
+    curl -L -o $ZIP \
+        https://www.kaggle.com/api/v1/datasets/download/arevel/chess-games
+    echo "undziping"
+    time unzip -o $ZIP
+
+    echo "transforming data"
+    mv -v $IN $OUT
+    time sed -i -e '1s/.*/moves/' \
+                -e "s/.*,//" \
+                -e '/{/d' \
+                -e "s/[0-9]\+\. //g" \
+                -e "s/\r//g" \
+                -e "s/ \(0-1\|1-0\|1\/2-1\/2\)$//" $OUT
+fi
+
+[ $clearn_zip = true ] && rm -v $ZIP
+
+echo "done"

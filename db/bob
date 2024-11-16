@@ -34,7 +34,7 @@ sudo docker run -d --name $container_name -p $db_port:$db_port $image_name
 # Wait for the database to be accessible
 printf "${C}%s${R}\n" "Checking database..."
 sleep 1
-while ! sudo docker exec -it "$container_name" psql -U numen -d chess_db -c "\dt;" 2> /dev/null; do
+while ! sudo docker exec -it "$container_name" psql -U root -d chess_db -c "\dt;" 2> /dev/null; do
     printf "${C}%s${R}\n" "Database is not ready yet, waiting..."
     sleep 1
 done

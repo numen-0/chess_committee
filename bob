@@ -9,6 +9,7 @@ R="\e[0m"
 term=st
 
 
+printf "${C}%s${R}\n" "closing previous run" \
 # skip typing for sudo
 if [ -f PASSWORD ]; then
     run_cmd="cd $(pwd) && pwd && cat PASSWORD | sudo -S docker-compose up --build" 
@@ -16,9 +17,11 @@ else
     run_cmd="cd $(pwd) && pwd && sudo docker-compose up --build"
 fi
 
+
 pkill -f "$run_cmd" \
     && printf "${C}%s${R}\n" "closing previous term" \
     || true # set -e
+
 
 printf "${C}%s${R}\n" "cooking..."
 

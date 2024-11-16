@@ -1,17 +1,95 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS  # cross-origin request fix
+from flask_cors import CORS
+import psycopg2
+import psycopg2.extras
+from psycopg2 import OperationalError
+
+import os
+import time
+from collections import Counter
 from enum import Enum
 
 
 app = Flask(__name__)
-# CORS(app, origins=["http://localhost:5000"])
-CORS(app, origins=["http://localhost:5000"], supports_credentials=True)
+CORS(app, origins=["http://localhost:5000"])
+# CORS(app, origins=["http://localhost:5000"], supports_credentials=True)
 
 
-@app.route("/generate_move", methods=["GET"])
+def read_secret(secret_name, default=None):
+    try:
+        with open(f"/run/secrets/{secret_name}", "r") as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        return default
+
+
+DB_HOST = "db"
+DB_NAME = read_secret("DB_NAME", "chess_db")
+DB_USER = read_secret("DB_USER", "root")
+DB_PASSWORD = read_secret("DB_PASSWORD", "1234")
+db_connection = None
+db_size = 1
+
+
+def connect_to_db():
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        database=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD
+    )
+    return conn
+
+
+def get_db_connection():
+    global db_connection
+    try:
+        if db_connection is None or db_connection.closed != 0:
+            db_connection = connect_to_db()
+    except Exception as e:
+        print("error:", e)
+        print("Database connection lost. Reconnecting...")
+        db_connection = connect_to_db()
+    return db_connection
+
+
+@app.route("/generate_moves", methods=["POST"])
 def generate_move():
-    # Placeholder for AI move generation logic
-    return jsonify({"move_uci": "e2e3"})
+    req_data = request.json
+    moves_start = req_data.get("moves_start")
+    top_moves = None
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Query games where the moves column starts with the provided string
+        cursor.execute("""
+            SELECT moves
+            FROM games
+            WHERE moves LIKE %s;
+        """, (moves_start + '%',))
+
+        games = cursor.fetchall()
+
+        next_moves = []
+        for (moves,) in games:
+            remaining_moves = moves[len(moves_start):].strip().split(" ")
+            if len(remaining_moves) > 0:
+                next_moves.append(remaining_moves[0])
+
+        move_counts = Counter(next_moves).most_common(5)
+
+        top_moves = [
+            {"move": move, "count": count} for move, count in move_counts
+        ]
+
+        cursor.close()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    global db_size
+    return jsonify({"top_moves": top_moves, "db_size": db_size})
 
 
 class Piece(Enum):
@@ -86,5 +164,19 @@ def encode_board():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002)
+    while db_connection is None:
+        try:
+            db_connection = connect_to_db()
+            print("Connected to the database successfully.")
 
+            cursor = db_connection.cursor()
+            cursor.execute("""
+                SELECT count(*) FROM games;
+            """)
+            db_size = int(cursor.fetchone()[0])
+
+            cursor.close()
+        except OperationalError as e:
+            print(f"Connection failed: {e}. Retrying in 1 second...")
+            time.sleep(1)
+    app.run(host="0.0.0.0", port=5002)

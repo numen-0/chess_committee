@@ -87,6 +87,28 @@ def random_move():
     })
 
 
+@app.route("/san_to_uci", methods=["POST"])
+def san_to_uci():
+    req_data = request.json
+
+    board = chess.Board(fen=req_data.get("fen"))
+    san_move = req_data.get("san_move")
+
+    if not san_move:
+        return jsonify({"error": "san_move parameter is required"}), 400
+
+    try:
+        move = board.parse_san(san_move)
+        if not board.is_legal(move):
+            return jsonify({"is_valid": False}), 200
+
+        uci_move = move.uci()
+        return jsonify({"is_valid": True, "move_uci": uci_move})
+
+    except Exception as e:
+        return jsonify({"error": str(e), "is_valid": False}), 400
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)
 

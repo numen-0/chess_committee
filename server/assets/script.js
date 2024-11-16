@@ -17,6 +17,7 @@ let pageMetaData = {
     resultDisplay: null,
     resultText: null,
     encodingDisplay: null,
+    percentage: null,
 };
 
 const promotionMap = {
@@ -32,6 +33,22 @@ function setMoves(moves) {
     document.getElementById('game-moves').innerText = moves; // Display initial board state
 }
 
+async function makeCodeMove(move) { // move_uci
+    const fromSquare = move.slice(0, 2);
+    const toSquare = move.slice(2, 4);
+    let promotionPiece = null;
+
+    if (move.length === 5) {
+        const promotionChar = move[4];
+        promotionPiece = promotionMap[promotionChar];
+    }
+
+    const piece = document.querySelector(`div[data-position="${fromSquare}"]`).querySelector('.piece');
+    const targetSquare = document.querySelector(`div[data-position="${toSquare}"]`);
+
+    await makeMove(piece, targetSquare, promotionPiece);
+}
+
 // ai /////////////////////////////////////////////////////////////////////////
 async function encodeBoard() {
     const response = await fetch('http://localhost:5002/encode_board', {
@@ -44,8 +61,50 @@ async function encodeBoard() {
         })
     });
     const data = await response.json();
-    console.log(data);
     pageMetaData.encodingDisplay.innerHTML = data.encoding;
+}
+async function makeAiMove() {
+    pageMetaData.turnDisplay.innerHTML = 'the committee is thinking';
+    const response = await fetch('http://localhost:5002/generate_moves', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            moves_start: gameState.moves,
+        })
+    });
+    const data = await response.json();
+    console.log(data);
+    const size = data.db_size;
+    const moves = data.top_moves;
+    if (moves.length > 0) {
+        for (const m of moves) {
+            const response = await fetch(`http://localhost:5001/san_to_uci`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    san_move: m.move,
+                    fen: gameState.fen,
+                })
+            });
+            const d = await response.json();
+            if (!d.is_valid) continue;
+
+            const move = d.move_uci;
+            const count = m.count
+
+            console.log(`selected move: ${move}, count: ${count}`)
+            pageMetaData.percentage.innerHTML = `${(count*100/size).toFixed(4)}%`;
+            pageMetaData.turnDisplay.innerHTML = 'your turn';
+            makeCodeMove(move)
+            return;
+        }
+    }
+    pageMetaData.percentage.innerHTML = "0%";
+    makeRandomMove()
 }
 
 // referee ////////////////////////////////////////////////////////////////////
@@ -57,7 +116,7 @@ async function createGame() {
     const data = await response.json();
     gameState.fen = data.fen;
     setMoves(data.board_moves);
-    encodeBoard()
+    encodeBoard();
 }
 async function gameOver() {
     const response = await fetch('http://localhost:5001/game_over', {
@@ -121,22 +180,9 @@ async function makeRandomMove() {
 
         const result = await response.json();
         console.log(result);
-        
+
         const move = result.move_uci; // e.g., "e2e4" "b2b1q"
-        const fromSquare = move.slice(0, 2);
-        const toSquare = move.slice(2, 4);
-        let promotionPiece = null;
-
-        if (move.length === 5) {
-            const promotionChar = move[4];
-            promotionPiece = promotionMap[promotionChar];
-        }
-
-        // Find the piece in the board that needs to be moved
-        const piece = document.querySelector(`div[data-position="${fromSquare}"]`).querySelector('.piece');
-        const targetSquare = document.querySelector(`div[data-position="${toSquare}"]`);
-
-        await makeMove(piece, targetSquare, promotionPiece);
+        makeCodeMove(move)
     } catch (error) {
         console.error("Error fetching random move:", error);
     }
@@ -159,9 +205,9 @@ function initGame() {
     }
     pageMetaData.turnDisplay.innerHTML = gameState.yourTurn
                                             ? 'your turn' 
-                                            : 'the commettee is thinking';
+                                            : 'the committee is thinking';
     setupBoard()
-    if (!gameState.yourTurn) makeRandomMove();
+    if (!gameState.yourTurn) makeAiMove();
 }
 async function restartGame() {
     await createGame();
@@ -221,7 +267,6 @@ function setupBoard(initialPositions = null) { // use the fen value
         };
     }
 
-    // TODO: SAVE HERE THE STUFF
     // Create the 8x8 grid and set up squares with alternating colors
     let row, col;
     for (let j = 0; j < 8; j++) {
@@ -295,8 +340,10 @@ function dragStart(e) {
         e.preventDefault(); // Prevent drag if not player's piece
         return;
     }
-    pageMetaData.selectedPiece.classList.remove('selected');
-    pageMetaData.selectedPiece = null;
+    if (pageMetaData.selectedPiece) {
+        pageMetaData.selectedPiece.classList.remove('selected');
+        pageMetaData.selectedPiece = null;
+    }
 
     e.dataTransfer.setData('text/plain', piece.id);
 
@@ -328,6 +375,7 @@ function dragOver(e) {
 }
 
 async function drop(e) {
+    e.preventDefault();
     const pieceId = e.dataTransfer.getData('text/plain');
     const piece = document.getElementById(pieceId);
     let targetSquare = e.target;
@@ -384,9 +432,16 @@ async function makeMove(piece, targetSquare, promotionPiece = null) {
         (from === (color ? "e1" : "e8")) &&
         (to[0] === 'c' || to[0] === 'g')
 
+            const rook = document.querySelector(
+                `[data-position="${(to[0] === 'c' ? 'a' : 'h')}${to[1]}"]`
+            ).querySelector('.piece');
+
+    const eat = targetSquare.querySelector(".piece");
+
     const enPassant = isPawn &&         // pawn only move forward uless they eat
-        (from[0] !== to[0]) &&          // we could check this more carefully
-        (to[1] === (color ? "6" : "3"));// but this works
+        !targetSquare &&                // we could check this more carefully
+        (from[0] !== to[0]) &&          // but this works
+        (to[1] === (color ? "6" : "3"));
     let name;
 
     if (promoting) {
@@ -461,10 +516,8 @@ async function makeMove(piece, targetSquare, promotionPiece = null) {
     
 
         if (gameState.yourTurn) {
-            pageMetaData.turnDisplay.innerHTML = 'the commettee is thinking';
             setTimeout(() => {
-                pageMetaData.turnDisplay.innerHTML = 'your turn';
-                makeRandomMove();
+                makeAiMove();
             }, 200);
         }
         gameState.yourTurn = !gameState.yourTurn;
@@ -540,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // display
     pageMetaData.turnDisplay = document.getElementById('turn-display');
     pageMetaData.encodingDisplay = document.getElementById('board-encoding');
+    pageMetaData.percentage = document.getElementById('percentage');
 
     // init game
     createGame();
