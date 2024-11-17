@@ -63,6 +63,17 @@ async function encodeBoard() {
     const data = await response.json();
     pageMetaData.encodingDisplay.innerHTML = data.encoding;
 }
+async function gameEnd() {
+    const response = await fetch('http://localhost:5002/game_end', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            moves: gameState.moves,
+        })
+    });
+}
 async function makeAiMove() {
     pageMetaData.turnDisplay.innerHTML = 'the committee is thinking...';
     const response = await fetch('http://localhost:5002/generate_moves', {
@@ -104,6 +115,7 @@ async function makeAiMove() {
         }
     }
     pageMetaData.percentage.innerHTML = "0%";
+    pageMetaData.turnDisplay.innerHTML = 'your turn';
     makeRandomMove()
 }
 
@@ -135,6 +147,8 @@ async function gameOver() {
     console.log(data);
 
     if (!data.is_over) return false;
+
+    gameEnd();
 
     const result = data.result;
     const winner = data.winner;

@@ -2,10 +2,12 @@
 
 set -eu
 
-dataset="big"
+dataset="${1:-small}"
 clearn_zip=true
 ZIP=./archive.zip
 OUT=./data.csv
+
+echo "Preparing dataset: $dataset"
 
 if [ "$dataset" = "small" ]; then
     IN=./games.csv
@@ -19,7 +21,7 @@ if [ "$dataset" = "small" ]; then
     echo "transforming data"
     time cut -d , -f13 $IN > $OUT
     rm $IN
-else
+elif [ "$dataset" = "big" ]; then
     IN=./chess_games.csv
     echo "donwloading data"
     curl -L -o $ZIP \
@@ -35,6 +37,9 @@ else
                 -e "s/[0-9]\+\. //g" \
                 -e "s/\r//g" \
                 -e "s/ \(0-1\|1-0\|1\/2-1\/2\)$//" $OUT
+else
+    echo "Unknown dataset name '$dataset'. Expected 'small' or 'big'." >&2
+    exit 1
 fi
 
 [ $clearn_zip = true ] && rm -v $ZIP

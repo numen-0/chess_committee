@@ -4,7 +4,6 @@ import psycopg2
 import psycopg2.extras
 from psycopg2 import OperationalError
 
-import os
 import time
 from collections import Counter
 from enum import Enum
@@ -89,6 +88,35 @@ def generate_move():
 
     global db_size
     return jsonify({"top_moves": top_moves, "db_size": db_size})
+
+
+@app.route("/game_end", methods=["POST"])
+def game_end():
+    req_data = request.json
+    moves = req_data.get("moves")
+
+    if not moves:
+        return jsonify({"error": "Missing required field: moves"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Insert the moves into the table
+        cursor.execute(
+            """
+            INSERT INTO games (moves)
+            VALUES (%s);
+            """,
+            (moves,)
+        )
+
+        conn.commit()
+        cursor.close()
+
+        return jsonify({"message": "Game saved successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 class Piece(Enum):

@@ -7,4 +7,3 @@ COPY games(moves)
     FROM '/docker-entrypoint-initdb.d/data.csv'
     DELIMITER ','
     CSV HEADER;
-

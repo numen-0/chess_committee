@@ -29,8 +29,9 @@ Requirements:
 ```bash
 cd db
 # fetch the data for the database.
-# adjust the dataset size in 'dataset' variable within the script.
-./get_data.sh
+./get_data.sh small
+# or if you want to use the large dataset
+./get_data.sh big
 ```
 
 ### Step 2: set the secrets
@@ -45,37 +46,43 @@ Note: While the above setup is convenient for local development, ensure that
 secrets are stored securely in production environments.
 
 ### Step 3: Run
-#### option 1: Using Docker Compose Directly
-
 To run the program with `docker-compose`, use the following command:
 ```bash
 sudo docker-compose up --build -d
 ```
-
-#### option 2: Using the Helper Script
-For a more convenient way to run the program, use the bob script. This script:
-- Opens a new terminal to run the `docker-compose up --build` command, so you
-retain control of your current terminal.
-- Automatically kills any previous instance of the application, allowing for
-easy re-runs when you make changes.
-
-```bash
-./bob
-```
-
-##### Optional: Using a Password File
-If you prefer to avoid typing your sudo password each time you run the script,
-create a `./PASSWORD` file containing your sudo password.
-
-### Terminal Compatibility
-The script defaults to the `st` terminal. If you use a different terminal,
-update the term variable in the script. You can also add support for additional
-terminal emulators by modifying the case statement within the script
 
 ## attributions
 ### datasets
 The datasets are sourced from publicly available chess game archives. Ensure
 you comply with the terms of use if you modify or redistribute the data.
 
-### assets
-`todo`
+### img
+white pieces:
+- pawn:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499810
+- king:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499806
+- queen:  By CburnettPawan (talk • contribs • blocks • protections • deletions • moves • rights • rights changes) - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499812
+- rook:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499814
+- bishop: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499801
+- knight: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499808
+
+black pieces:
+- pawn:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499809
+- king:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499803
+- queen:  By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499811
+- rook:   By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499813
+- bishop: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499800
+- knight: By Cburnett - Own work, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=1499807
+
+favicon.ico:
+The favicon was generated using the following graphics from Twitter Twemoji:
+
+- Graphics Title: 265f.svg
+- Graphics Author: Copyright 2020 Twitter, Inc and other contributors (https://github.com/twitter/twemoji)
+- Graphics Source: https://github.com/twitter/twemoji/blob/master/assets/svg/265f.svg
+- Graphics License: CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
+buttons:
+- Edit tool icon created by Creatype - Flaticon (https://www.flaticon.com/free-icons/edit-tool)
+- Repeat icon created by IconKanan - Flaticon (https://www.flaticon.com/free-icons/repeat)
+- Dark mode icon created by Icon Hubs - Flaticon (https://www.flaticon.com/free-icons/dark-mode)
+
