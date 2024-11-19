@@ -11,7 +11,9 @@ The program supports two datasets:
 - **Large Dataset** (+6,000,000 games): Ideal for comprehensive analysis and
 gameplay.
 
-Switch between datasets using the script located at `./db/get_data.sh`.
+Switch between datasets using the script located at `./db/get_data.sh`. Note,
+if you have already build the proyect you will need to remove the volume 
+`db_data`, and rebuild again.
 
 ---
 
@@ -19,6 +21,7 @@ Switch between datasets using the script located at `./db/get_data.sh`.
 
 - `docker` and `docker-compose`
 - `sudo` access
+- `kubectl` and `minikube`
 
 ## How to Run
 ### Step 1: fetch the data
@@ -28,10 +31,9 @@ Requirements:
 
 ```bash
 cd db
-# fetch the data for the database.
+# fetch the data for the database. do './get_data.sh big' for the large dataset
 ./get_data.sh small
-# or if you want to use the large dataset
-# ./get_data.sh big
+cd ..
 ```
 
 ### Step 2: set the secrets
@@ -48,7 +50,13 @@ secrets are stored securely in production environments.
 ### Step 3: Run
 To run the program with `docker-compose`, use the following command:
 ```bash
-sudo docker-compose up --build -d
+sudo docker-compose up -d
+```
+
+### Step 4: Stop
+To stop the program, use the following command:
+```bash
+sudo docker-compose down
 ```
 
 ## attributions

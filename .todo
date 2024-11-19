@@ -3,8 +3,9 @@
  ┻ ┗━┛┻━┛┗━┛
 git:
 [_] finish the readme
-docker:
-[_] kubernetes
+kubernetes:
+[_] make it work
+    [_] inter communication
 server:
 [X] do the thing
 [X] save matches in the db (add new games)

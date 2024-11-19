@@ -1,0 +1,51 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  namespace: chess-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - name: server
+          image: httpd:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: httpd-config
+              mountPath: /usr/local/apache2/conf/httpd.conf
+              # subPath: httpd.conf
+            - name: web-content
+              mountPath: /usr/local/apache2/htdocs
+      volumes:
+        - name: httpd-config
+          hostPath:
+            path: /mnt/data/server/httpd.conf
+            type: File
+        - name: web-content
+          hostPath:
+            path: /mnt/data/server/web
+            type: Directory
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: chess-app
+spec:
+  selector:
+    app: server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+

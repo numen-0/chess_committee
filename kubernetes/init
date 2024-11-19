@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -eu
+
+# sudo usermod -aG docker $USER && newgrp docker
+
+# minikube start
+minikube start --mount-string="$(dirname $(pwd))/:/mnt/data" --mount
+
+# echo 'chess_db' | tee POSTGRES_DB | base64 > POSTGRES_DB_BASE64
+# echo '1234' | tee POSTGRES_PASSWORD | base64 > POSTGRES_PASSWORD_BASE64
+# echo 'root' | tee POSTGRES_USER | base64 > POSTGRES_USER_BASE64
+# kubectl get services -n chess-app
+# kubectl get pods -n chess-app

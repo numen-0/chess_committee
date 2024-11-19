@@ -1,0 +1,45 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: referee
+  namespace: chess-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: referee
+  template:
+    metadata:
+      labels:
+        app: referee
+    spec:
+      containers:
+        - name: referee
+          image: python:3.9-slim
+          command: ["sh", "-c", 'cd /app && pip install -r requirements.txt && python app.py']
+          ports:
+            - containerPort: 5001
+          volumeMounts:
+            - name: referee-code
+              mountPath: /app
+      volumes:
+        - name: referee-code
+          hostPath:
+            path: /mnt/data/referee
+            type: Directory
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: referee
+  namespace: chess-app
+spec:
+  selector:
+    app: referee
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+

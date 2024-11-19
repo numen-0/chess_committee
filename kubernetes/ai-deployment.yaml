@@ -1,0 +1,54 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai
+  namespace: chess-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai
+  template:
+    metadata:
+      labels:
+        app: ai
+    spec:
+      automountServiceAccountToken: false  # Disable automatic service account token mount
+      containers:
+        - name: ai
+          image: python:3.9-slim
+          securityContext:
+            readOnlyRootFilesystem: false  # Ensure the filesystem is writable
+          command: ["sh", "-c", 'cd /app && pip install -r requirements.txt && python app.py']
+          ports:
+            - containerPort: 5002
+          volumeMounts:
+            - name: ai-code
+              mountPath: /app
+            - name: postgres-secrets
+              mountPath: /run/secrets
+              readOnly: true
+      volumes:
+        - name: ai-code
+          hostPath:
+            path: /mnt/data/ai
+            type: Directory
+        - name: postgres-secrets
+          secret:
+            secretName: postgres-secrets
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai
+  namespace: chess-app
+spec:
+  selector:
+    app: ai
+  ports:
+    - protocol: TCP
+      port: 5002
+      targetPort: 5002
+
