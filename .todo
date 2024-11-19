@@ -7,7 +7,7 @@ docker:
 [_] kubernetes
 server:
 [X] do the thing
-[_] save matches in the db (add new games)
+[X] save matches in the db (add new games)
 referee:
 [X] do the thing
 commettee:

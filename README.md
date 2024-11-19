@@ -31,7 +31,7 @@ cd db
 # fetch the data for the database.
 ./get_data.sh small
 # or if you want to use the large dataset
-./get_data.sh big
+# ./get_data.sh big
 ```
 
 ### Step 2: set the secrets
