@@ -2,10 +2,9 @@
  ┃ ┃ ┃┃ ┃┃ ┃
  ┻ ┗━┛┻━┛┗━┛
 git:
-[_] finish the readme
+[X] finish the readme
 kubernetes:
-[_] make it work
-    [_] inter communication
+[X] do the thing
 server:
 [X] do the thing
 [X] save matches in the db (add new games)

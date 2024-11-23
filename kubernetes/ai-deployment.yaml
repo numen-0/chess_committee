@@ -21,6 +21,7 @@ spec:
           securityContext:
             readOnlyRootFilesystem: false  # Ensure the filesystem is writable
           command: ["sh", "-c", 'cd /app && pip install -r requirements.txt && python app.py']
+          # command: ["sh", "-c", 'cd /app && python app.py']
           ports:
             - containerPort: 5002
           volumeMounts:
@@ -45,10 +46,12 @@ metadata:
   name: ai
   namespace: chess-app
 spec:
+  type: NodePort
   selector:
     app: ai
   ports:
     - protocol: TCP
       port: 5002
       targetPort: 5002
-
+      nodePort: 30002
+  externalTrafficPolicy: Cluster

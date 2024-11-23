@@ -1,0 +1,47 @@
+#!/bin/sh
+
+WEB_DIR=./server/web
+
+[ "${1:-}" = "-d" ] && {
+    echo "stopping docker compose"
+    printf "\e[92m$ sudo docker compose down\e[0m\n"
+    sudo docker compose down
+    exit 0
+}
+
+echo "Generating JSON configuration files..."
+cat <<EOF > $WEB_DIR/ip.json
+{
+    "referee": {
+        "kubernetes": {
+            "ip": "192.168.49.2",
+            "port": 30001
+        },
+        "docker_compose": {
+            "ip": "localhost",
+            "port": 5001
+        }
+    },
+    "ai": {
+        "kubernetes": {
+            "ip": "192.168.49.2",
+            "port": 30002
+        },
+        "docker_compose": {
+            "ip": "localhost",
+            "port": 5002
+        }
+    }
+}
+EOF
+cat <<EOF > $WEB_DIR/mode.json
+{
+    "mode": "docker_compose"
+}
+EOF
+
+echo "running docker compose"
+printf "\e[92m$ sudo docker compose up --build -d\e[0m\n"
+sudo docker compose up --build -d
+
+echo "Go to http://localhost:80/"

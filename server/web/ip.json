@@ -1,0 +1,22 @@
+{
+    "referee": {
+        "kubernetes": {
+            "ip": "192.168.49.2",
+            "port": 30001
+        },
+        "docker_compose": {
+            "ip": "localhost",
+            "port": 5001
+        }
+    },
+    "ai": {
+        "kubernetes": {
+            "ip": "192.168.49.2",
+            "port": 30002
+        },
+        "docker_compose": {
+            "ip": "localhost",
+            "port": 5002
+        }
+    }
+}

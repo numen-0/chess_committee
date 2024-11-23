@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: httpd:latest
+          image: httpd:alpine3.20
           ports:
             - containerPort: 80
           volumeMounts:
@@ -42,10 +42,11 @@ metadata:
   name: server
   namespace: chess-app
 spec:
+  type: NodePort
   selector:
     app: server
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-
+      nodePort: 30000

@@ -2,7 +2,14 @@
 
 set -eu
 
-dataset="${1:-small}"
+dataset="${1:-}"
+
+[ -z "$dataset" ] && {
+    echo "./get_data.sh [dataset]"
+    echo "    dataset: {small, big}"
+    exit 0
+}
+
 clearn_zip=true
 ZIP=./archive.zip
 OUT=./data.csv

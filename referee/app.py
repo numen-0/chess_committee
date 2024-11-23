@@ -4,9 +4,6 @@ import chess
 import random
 
 app = Flask(__name__)
-# CORS(app)
-# CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
-# CORS(app, origins=["http://server", "http://localhost"])
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 

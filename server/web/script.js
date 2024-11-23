@@ -27,10 +27,40 @@ const promotionMap = {
     q: "queen"
 };
 
+
+// ip hack ////////////////////////////////////////////////////////////////////
+let refereeURI;
+let aiURI;
+async function setupEnv() {
+    try {
+        // Fetch mode configuration to determine the environment
+        const modeResponse = await fetch('/mode.json');
+        const modeData = await modeResponse.json();
+        const env = modeData.mode || 'kubernetes'; // Default to 'kubernetes'
+
+        // Fetch service configuration from ip.json
+        const configResponse = await fetch('/ip.json');
+        const configData = await configResponse.json();
+
+        // Set global URIs for referee and AI services
+        const refereeService = configData.referee[env];
+        refereeURI = `http://${refereeService.ip}:${refereeService.port}`;
+
+        const aiService = configData.ai[env];
+        aiURI = `http://${aiService.ip}:${aiService.port}`;
+
+        console.log(`Environment set to: ${env}`);
+        console.log(`Referee URI: ${refereeURI}`);
+        console.log(`AI URI: ${aiURI}`);
+    } catch (error) {
+        console.error('Error setting up environment:', error);
+    }
+}
+
 // bridge /////////////////////////////////////////////////////////////////////
 function setMoves(moves) {
     gameState.moves = moves;
-    document.getElementById('game-moves').innerText = moves; // Display initial board state
+    document.getElementById('game-moves').innerText = moves;
 }
 
 async function makeCodeMove(move) { // move_uci
@@ -51,7 +81,7 @@ async function makeCodeMove(move) { // move_uci
 
 // ai /////////////////////////////////////////////////////////////////////////
 async function encodeBoard() {
-    const response = await fetch('http://127.0.0.1:5002/encode_board', {
+    const response = await fetch(`${aiURI}/encode_board`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -64,7 +94,7 @@ async function encodeBoard() {
     pageMetaData.encodingDisplay.innerHTML = data.encoding;
 }
 async function gameEnd() {
-    const response = await fetch('http://127.0.0.1:5002/game_end', {
+    const response = await fetch(`${aiURI}/game_end`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -76,7 +106,7 @@ async function gameEnd() {
 }
 async function makeAiMove() {
     pageMetaData.turnDisplay.innerHTML = 'the committee is thinking...';
-    const response = await fetch('http://127.0.0.1:5002/generate_moves', {
+    const response = await fetch(`${aiURI}/generate_moves`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -91,7 +121,7 @@ async function makeAiMove() {
     const moves = data.top_moves;
     if (moves.length > 0) {
         for (const m of moves) {
-            const response = await fetch(`http://127.0.0.1:5001/san_to_uci`, {
+            const response = await fetch(`${refereeURI}/san_to_uci`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,7 +155,7 @@ async function createGame() {
     pageMetaData.turnDisplay.innerHTML = gameState.isWhiteTeam
                                             ? 'your turn' 
                                             : 'the committee is thinking...';
-    const response = await fetch('http://127.0.0.1:5001/create_game', {
+    const response = await fetch(`${refereeURI}/create_game`, {
         method: 'GET',
     });
     const data = await response.json();
@@ -134,7 +164,7 @@ async function createGame() {
     encodeBoard();
 }
 async function gameOver() {
-    const response = await fetch('http://127.0.0.1:5001/game_over', {
+    const response = await fetch(`${refereeURI}/game_over`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -169,7 +199,7 @@ async function gameOver() {
 }
 
 async function checkMove(from, to) {
-    const response = await fetch(`http://127.0.0.1:5001/check_move`, {
+    const response = await fetch(`${refereeURI}/check_move`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -185,7 +215,7 @@ async function checkMove(from, to) {
 
 async function makeRandomMove() {
     try {
-        const response = await fetch(`http://127.0.0.1:5001/random_move`, {
+        const response = await fetch(`${refereeURI}/random_move`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -612,7 +642,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pageMetaData.encodingDisplay = document.getElementById('board-encoding');
     pageMetaData.percentage = document.getElementById('percentage');
 
-    // init game
-    createGame();
-    initGame();
+    // setupEnv and init game
+    setupEnv()
+        .then(() => createGame()) // Ensure createGame returns a promise if it has async operations
+        .then(() => initGame())
+        .catch(error => console.error('Error during initialization:', error));
 });

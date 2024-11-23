@@ -1,43 +1,47 @@
 # Chess Commetee
 ## Overview
 
-Chess Committee is a chess program that uses AI (Average Intelligence) to play
-against users. The AI determines its moves by analyzing the most frequently
-played move in its dataset. If no data is available, it will choose a random
-legal move.
+Chess Committee is a chess program powered by AI (Average Intelligence). It
+analyzes a dataset of chess games to determine its moves, choosing the most
+frequently played move. If no data is available, it defaults to a random legal
+move.
 
 The program supports two datasets:
-- **Small Dataset** (~20,000 games): Lightweight for quick setup and testing.
-- **Large Dataset** (+6,000,000 games): Ideal for comprehensive analysis and
-gameplay.
+- **Small Dataset** (~20,000 games), lightweight for quick setup and testing.
+- **Large Dataset** (+6,000,000 games).
 
 Switch between datasets using the script located at `./db/get_data.sh`. Note,
-if you have already build the proyect you will need to remove the volume 
+if you have already build the project you will need to remove the volume 
 `db_data`, and rebuild again.
+
+You can switch datasets using the `./db/get_data.sh` script. If you’ve already
+built the project, you will need to delete the persistent volume and rebuild for
+the changes to take effect.
 
 ---
 
 ## Prerequisites
 
 - `docker` and `docker-compose`
-- `sudo` access
 - `kubectl` and `minikube`
+- `curl` and `unzip`
+- `sudo` access
 
 ## How to Run
-### Step 1: fetch the data
-Requirements:
-- `curl`
-- `unzip`
-
+### Step 1: Fetch the data
+Navigate to the `db` directory and fetch the dataset for the database:
 ```bash
 cd db
-# fetch the data for the database. do './get_data.sh big' for the large dataset
+# Fetch the small dataset (~20,000 games)
 ./get_data.sh small
+
+# Alternatively, fetch the large dataset (+6,000,000 games)
+# ./get_data.sh big
 cd ..
 ```
 
-### Step 2: set the secrets
-To configure secrets for the database, run the following commands:
+### Step 2: Set the secrets
+Create a directory for secrets and populate it with the database credentials:
 ```bash
 mkdir ./secrets/
 echo "chess_db" > ./secrets/POSTGRES_DB
@@ -47,16 +51,29 @@ echo "root"     > ./secrets/POSTGRES_USER
 Note: While the above setup is convenient for local development, ensure that
 secrets are stored securely in production environments.
 
-### Step 3: Run
-To run the program with `docker-compose`, use the following command:
+### Step 3: Run the program
+#### Option 1: docker compose
+Run the following command to start the program:
 ```bash
-sudo docker-compose up -d
+./run
+```
+
+#### Option 2; kubernetes (minikube)
+First, initialize Minikube:
+```bash
+cd ./kubernetes
+./init
+```
+
+Then, deploy the program using kubectl:
+```bash
+./run
 ```
 
 ### Step 4: Stop
-To stop the program, use the following command:
+To stop the program, use the -d flag:
 ```bash
-sudo docker-compose down
+./run -d
 ```
 
 ## attributions

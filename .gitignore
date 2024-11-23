@@ -1,7 +1,5 @@
-PASSWORD
 pyrightconfig.json
 venv/
 db/data.csv
 secrets/
 cleanup
-bob

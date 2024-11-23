@@ -14,27 +14,40 @@ spec:
       labels:
         app: db
     spec:
+      automountServiceAccountToken: false  # Disable automatic service account token mount
       containers:
         - name: db
           image: postgres:13
+          securityContext:
+            readOnlyRootFilesystem: false  # Ensure the filesystem is writable
           ports:
             - containerPort: 5432
-          envFrom:
-            - secretRef:
-                name: postgres-secrets
           volumeMounts:
-            - name: db-persistent-storage
-              mountPath: /var/lib/postgresql/data
             - name: init-scripts
               mountPath: /docker-entrypoint-initdb.d
+            - name: postgres-secrets
+              mountPath: /run/secrets
+              readOnly: true
+            - name: db-persistent-storage
+              mountPath: /var/lib/postgresql/data
+          env:
+            - name: POSTGRES_USER_FILE
+              value: "/run/secrets/POSTGRES_USER"
+            - name: POSTGRES_PASSWORD_FILE
+              value: "/run/secrets/POSTGRES_PASSWORD"
+            - name: POSTGRES_DB_FILE
+              value: "/run/secrets/POSTGRES_DB"
       volumes:
-        - name: db-persistent-storage
-          persistentVolumeClaim:
-            claimName: db-pvc
         - name: init-scripts
           hostPath:
             path: /mnt/data/db
             type: Directory
+        - name: postgres-secrets
+          secret:
+            secretName: postgres-secrets
+        - name: db-persistent-storage
+          persistentVolumeClaim:
+            claimName: db-pvc
 ---
 # Service
 apiVersion: v1
@@ -49,4 +62,3 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
-

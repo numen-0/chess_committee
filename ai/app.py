@@ -10,7 +10,7 @@ from enum import Enum
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 def read_secret(secret_name):

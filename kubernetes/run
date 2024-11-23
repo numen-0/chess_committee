@@ -1,0 +1,102 @@
+#!/bin/sh
+
+set -eu
+
+manifests="\
+secrets.yaml \
+pvc.yaml \
+server-deployment.yaml \
+referee-deployment.yaml \
+ai-deployment.yaml \
+db-deployment.yaml"
+
+SECRETS_DIR="./../secrets"
+WEB_DIR="../server/web"
+
+if [ "${1:-}" = "-d" ]; then
+    kubectl delete namespace chess-app
+    exit 0
+fi
+
+echo "Generating secrets"
+if [ ! -d "$SECRETS_DIR" ]; then
+    echo "Error: Secrets directory $SECRETS_DIR does not exist!" >&2
+    exit 1
+fi
+
+cat <<EOF > secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secrets
+  namespace: chess-app
+type: Opaque
+data:
+  POSTGRES_USER: $(base64 $SECRETS_DIR/POSTGRES_USER)
+  POSTGRES_PASSWORD: $(base64 $SECRETS_DIR/POSTGRES_PASSWORD)
+  POSTGRES_DB: $(base64 $SECRETS_DIR/POSTGRES_DB)
+EOF
+
+echo "Setting up namespace"
+kubectl apply -f ./namespace.yaml
+
+echo "Getting minikube-ip"
+MINIKUBE_IP=$(minikube ip)
+
+echo "Generating JSON configuration files..."
+cat <<EOF > $WEB_DIR/ip.json
+{
+    "referee": {
+        "kubernetes": {
+            "ip": "$MINIKUBE_IP",
+            "port": 30001
+        },
+        "docker_compose": {
+            "ip": "localhost",
+            "port": 5001
+        }
+    },
+    "ai": {
+        "kubernetes": {
+            "ip": "$MINIKUBE_IP",
+            "port": 30002
+        },
+        "docker_compose": {
+            "ip": "localhost",
+            "port": 5002
+        }
+    }
+}
+EOF
+cat <<EOF > $WEB_DIR/mode.json
+{
+    "mode": "kubernetes"
+}
+EOF
+
+echo "Applying Kubernetes manifests..."
+for manifest in $manifests; do
+    printf "\e[92m$ kubectl apply -f %s\e[0m\n" "$manifest"
+    kubectl apply -f "$manifest"
+done
+
+echo "Waiting for the pods to be ready..."
+while true; do
+    POD_STATUS=$(kubectl get pods -n chess-app \
+        -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | \
+        wc -w)
+    
+    if [ "$POD_STATUS" -eq 4 ]; then
+        break
+    fi
+
+    echo "Pods are not ready yet, retrying in 1 second..."
+    sleep 1
+done
+
+echo "All pods are running, forwarding port..."
+printf "\e[92m$ kubectl port-forward svc/server 8080:80 -n chess-app &\n\e[0m"
+(kubectl port-forward svc/server 8080:80 -n chess-app &) &
+
+echo "Go to http://localhost:8080/"
+
